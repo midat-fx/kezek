@@ -35,9 +35,10 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
       .catch(() => setError("Не удалось загрузить услуги"));
   }, [slug]);
 
+  // Data lands asynchronously; loading state is `slots === null`,
+  // reset in the event handlers that change service/master/date.
   const loadSlots = useCallback(() => {
     if (!service || !master) return;
-    setSlots(null);
     fetch(`/api/public/${slug}/slots?serviceId=${service.id}&staffId=${master.id}&date=${date}`)
       .then((r) => r.json())
       .then((d) => setSlots(d.slots ?? []))
@@ -46,10 +47,9 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
 
   useEffect(loadSlots, [loadSlots]);
 
-  // Hold countdown
+  // Hold countdown (initial value is set in pickSlot)
   useEffect(() => {
     if (!hold) return;
-    setHoldLeft(hold.expiresInSec);
     const t = setInterval(() => setHoldLeft((s) => Math.max(0, s - 1)), 1000);
     return () => clearInterval(t);
   }, [hold]);
@@ -69,7 +69,9 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
       loadSlots();
       return;
     }
-    setHold(await res.json());
+    const h: Hold = await res.json();
+    setHold(h);
+    setHoldLeft(h.expiresInSec);
   }
 
   async function confirm() {
@@ -145,6 +147,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
                   setService(svc);
                   setMaster(null);
                   setHold(null);
+                  setSlots(null);
                 }}
                 className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition ${
                   service?.id === svc.id
@@ -177,6 +180,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
                 onClick={() => {
                   setMaster(m);
                   setHold(null);
+                  setSlots(null);
                 }}
                 className={`rounded-full border px-4 py-2 transition ${
                   master?.id === m.id
@@ -199,7 +203,10 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
             type="date"
             value={date}
             min={new Date().toISOString().slice(0, 10)}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => {
+              setDate(e.target.value);
+              setSlots(null);
+            }}
             className="mb-3 rounded-lg border border-zinc-300 px-3 py-2"
           />
           {!slots ? (

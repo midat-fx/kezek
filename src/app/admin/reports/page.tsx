@@ -6,6 +6,8 @@ import { RevenueChart } from "./revenue-chart";
 export default async function ReportsPage() {
   const session = await requireSession();
   const [biz] = await db.select().from(s.businesses).where(eq(s.businesses.id, session.businessId));
+  // Server component renders per request — "now" is legitimately request-scoped.
+  // eslint-disable-next-line react-hooks/purity
   const since = new Date(Date.now() - 30 * 24 * 3600_000);
 
   // Revenue per local day, completed bookings, last 30 days
