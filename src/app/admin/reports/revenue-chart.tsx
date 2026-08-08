@@ -15,7 +15,8 @@ export function RevenueChart({ data }: { data: { day: string; total: number }[] 
             tickFormatter={(v: number) => `${Math.round(v / 1000)}к`}
           />
           <Tooltip formatter={(v) => [`${Number(v).toLocaleString("ru-RU")} ₸`, "Выручка"]} />
-          <Bar dataKey="total" fill="#18181b" radius={[4, 4, 0, 0]} />
+          {/* no grow-in animation: the calendar refreshes live and replays it every time */}
+          <Bar dataKey="total" fill="#18181b" radius={[4, 4, 0, 0]} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>

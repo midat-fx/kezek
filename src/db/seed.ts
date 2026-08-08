@@ -101,25 +101,28 @@ async function main() {
     .values(names.map(([name, phone]) => ({ businessId: biz.id, name, phone })))
     .returning();
 
-  // Bookings: 3 weeks back (completed / some no-shows) + a few upcoming.
+  // Bookings from 3 weeks ago through 3 days ahead, so a fresh clone opens on
+  // a day that actually has something in it. Past ones are settled
+  // (completed / the occasional no-show), future ones are still confirmed.
   // All times UTC; Almaty is UTC+5, so 05:00Z = 10:00 local.
   const day = 24 * 3600 * 1000;
   const now = Date.now();
   const rows: (typeof s.bookings.$inferInsert)[] = [];
   let i = 0;
-  for (let d = 21; d >= 1; d--) {
+  for (let d = 21; d >= -3; d--) {
     const base = new Date(now - d * day);
     if (base.getUTCDay() === 1) continue; // Monday closed
     // 2-4 bookings per day, alternating masters/services
-    const perDay = 2 + ((d * 7) % 3);
+    const perDay = 2 + ((Math.abs(d) * 7) % 3);
     for (let k = 0; k < perDay; k++) {
-      const master = masters[(i + k) % 2]; // Dana/Madina full day
+      const master = masters[(i + k) % 2]; // Dana/Madina work full days
       const service = svc.filter((v, idx) => [0, 1, 2, 4].includes(idx))[(i + k) % 4];
       const startHourUtc = 5 + k * 3; // 10:00, 13:00, 16:00, 19:00 local
       const start = new Date(base);
       start.setUTCHours(startHourUtc, 0, 0, 0);
       const end = new Date(start.getTime() + service.durationMin * 60000);
-      const noShow = (i + k) % 9 === 0;
+      const isPast = end.getTime() < now;
+      const noShow = isPast && (i + k) % 9 === 0;
       rows.push({
         businessId: biz.id,
         staffId: master.id,
@@ -127,29 +130,11 @@ async function main() {
         clientId: cls[(i + k) % cls.length].id,
         startAt: start,
         endAt: end,
-        status: noShow ? "no_show" : "completed",
+        status: noShow ? "no_show" : isPast ? "completed" : "confirmed",
         priceKzt: service.priceKzt,
       });
       i++;
     }
-  }
-  // Upcoming confirmed bookings (skip Mondays)
-  for (let d = 1; d <= 3; d++) {
-    const base = new Date(now + d * day);
-    if (base.getUTCDay() === 1) continue;
-    const service = svc[d % 3];
-    const start = new Date(base);
-    start.setUTCHours(6 + d, 0, 0, 0);
-    rows.push({
-      businessId: biz.id,
-      staffId: masters[d % 2].id,
-      serviceId: service.id,
-      clientId: cls[d].id,
-      startAt: start,
-      endAt: new Date(start.getTime() + service.durationMin * 60000),
-      status: "confirmed",
-      priceKzt: service.priceKzt,
-    });
   }
   await db.insert(s.bookings).values(rows);
 
