@@ -11,6 +11,9 @@ async function main() {
   const db = drizzle(pool, { schema: s });
 
   // Idempotent: wipe and re-seed.
+  await db.delete(s.messageLog);
+  await db.delete(s.outbox);
+  await db.delete(s.waitlistEntries);
   await db.delete(s.auditLog);
   await db.delete(s.bookings);
   await db.delete(s.clients);
@@ -136,7 +139,30 @@ async function main() {
       i++;
     }
   }
-  await db.insert(s.bookings).values(rows);
+  const inserted = await db.insert(s.bookings).values(rows).returning();
+
+  // Queue the messages the upcoming bookings would have produced, so the
+  // notifications page has something to show and `pnpm worker` has work to do.
+  const upcoming = inserted.filter((b) => b.status === "confirmed");
+  if (upcoming.length > 0) {
+    await db.insert(s.outbox).values(
+      upcoming.flatMap((b) => [
+        {
+          businessId: biz.id,
+          topic: "booking.confirmed",
+          payload: { bookingId: b.id },
+          dedupeKey: `booking.confirmed:${b.id}`,
+        },
+        {
+          businessId: biz.id,
+          topic: "booking.reminder",
+          payload: { bookingId: b.id },
+          dedupeKey: `booking.reminder:${b.id}`,
+          availableAt: new Date(b.startAt.getTime() - 24 * 3600_000),
+        },
+      ]),
+    );
+  }
 
   console.log(`Seeded: business=${biz.slug}, staff=${masters.length}, services=${svc.length}, clients=${cls.length}, bookings=${rows.length}`);
   console.log("Admin login: owner@kezek.dev / kezek-demo");
