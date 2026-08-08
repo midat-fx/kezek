@@ -4,6 +4,18 @@ Online booking platform for service businesses (salons, barbershops, clinics) �
 
 Clients book a service in a 4-step wizard; the business runs its day from an admin panel with a live calendar, CRM, and revenue reports. Kazakh «кезек» = "queue".
 
+| Public booking | Slot held while you check out |
+|---|---|
+| ![Booking wizard](docs/screenshots/01-booking-wizard.png) | ![Slot hold countdown](docs/screenshots/02-slot-hold.png) |
+
+**Admin calendar** — per-master day view, updates live over SSE as bookings arrive:
+
+![Admin calendar](docs/screenshots/03-admin-calendar.png)
+
+**Reports** — 30-day revenue, per-service breakdown, no-show rate:
+
+![Reports](docs/screenshots/04-reports.png)
+
 ## Why it's interesting under the hood
 
 **Double-booking is prevented twice.** When a client picks a slot, the app places a short-lived **Redis hold** (`SET NX EX`, cart-style reservation with a visible countdown) — the first line of defense. The final insert is guarded by a PostgreSQL **exclusion constraint**:
@@ -45,6 +57,10 @@ pnpm dev
 
 - Public booking: http://localhost:3000/aruzhan
 - Admin: http://localhost:3000/admin — `owner@kezek.dev` / `kezek-demo`
+
+The seed generates three weeks of settled history plus the next few days, so the
+calendar and reports have something in them the moment you log in.
+`pnpm screenshots` regenerates the images above against a running dev server.
 
 ## Features
 
