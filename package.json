@@ -10,8 +10,10 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/db/seed.ts",
-    "test": "vitest run",
-    "screenshots": "tsx scripts/screenshots.ts"
+    "test": "vitest run --config vitest.config.ts",
+    "screenshots": "tsx scripts/screenshots.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:all": "pnpm test && pnpm test:integration"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
