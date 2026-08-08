@@ -2,6 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { and, eq, gte, inArray, lt } from "drizzle-orm";
 import { db, schema as s } from "@/db";
+import { cancelByDedupeKey, enqueue } from "./outbox";
 import { redis } from "./redis";
 import { localTimeToUtc, isoWeekday, slotsForDay, type Range } from "./slots";
 
@@ -159,35 +160,70 @@ export async function createBooking(opts: {
       .returning())[0];
 
   try {
-    const [booking] = await db
-      .insert(s.bookings)
-      .values({
+    // Booking, audit trail and outbound messages commit together: a client can
+    // never end up with a confirmation for a booking that was rolled back.
+    const bookingId = await db.transaction(async (tx) => {
+      const [booking] = await tx
+        .insert(s.bookings)
+        .values({
+          businessId,
+          staffId,
+          serviceId,
+          clientId: clientRow.id,
+          startAt: new Date(slot.startMs),
+          endAt: new Date(slot.endMs),
+          status: "confirmed",
+          priceKzt: service.priceKzt,
+        })
+        .returning();
+
+      await tx.insert(s.auditLog).values({
         businessId,
-        staffId,
-        serviceId,
-        clientId: clientRow.id,
-        startAt: new Date(slot.startMs),
-        endAt: new Date(slot.endMs),
-        status: "confirmed",
-        priceKzt: service.priceKzt,
-      })
-      .returning();
+        action: "booking.create",
+        entity: "booking",
+        entityId: booking.id,
+        meta: { staffId, serviceId, startAt: new Date(slot.startMs).toISOString() },
+      });
+
+      await enqueue(tx, {
+        businessId,
+        topic: "booking.confirmed",
+        payload: { bookingId: booking.id },
+        dedupeKey: `booking.confirmed:${booking.id}`,
+      });
+
+      // Reminder the day before; retired automatically if the booking is
+      // cancelled before the worker gets to it.
+      const remindAt = new Date(slot.startMs - 24 * 3600_000);
+      if (remindAt.getTime() > Date.now()) {
+        await enqueue(tx, {
+          businessId,
+          topic: "booking.reminder",
+          payload: { bookingId: booking.id },
+          dedupeKey: `booking.reminder:${booking.id}`,
+          availableAt: remindAt,
+        });
+      }
+
+      return booking.id;
+    });
 
     await redis().del(holdKey(staffId, slot.startMs));
-    await db.insert(s.auditLog).values({
-      businessId,
-      action: "booking.create",
-      entity: "booking",
-      entityId: booking.id,
-      meta: { staffId, serviceId, startAt: new Date(slot.startMs).toISOString() },
-    });
-    await publishCalendar(businessId, { type: "booking.created", bookingId: booking.id });
-    return { ok: true, bookingId: booking.id };
+    await publishCalendar(businessId, { type: "booking.created", bookingId });
+    return { ok: true, bookingId };
   } catch (e) {
     // 23P01 = exclusion_violation: the DB constraint is the last line of defense.
-    if ((e as { code?: string }).code === "23P01") return { ok: false, error: "slot_taken" };
+    if (isPgError(e, "23P01")) return { ok: false, error: "slot_taken" };
     throw e;
   }
+}
+
+/** Drizzle wraps driver errors, so the pg code can sit a few `cause` links down. */
+function isPgError(error: unknown, code: string): boolean {
+  for (let e = error; e; e = (e as { cause?: unknown }).cause) {
+    if ((e as { code?: string }).code === code) return true;
+  }
+  return false;
 }
 
 export async function setBookingStatus(opts: {
@@ -197,16 +233,31 @@ export async function setBookingStatus(opts: {
   actorUserId: string;
 }): Promise<void> {
   const { businessId, bookingId, status, actorUserId } = opts;
-  await db
-    .update(s.bookings)
-    .set({ status })
-    .where(and(eq(s.bookings.id, bookingId), eq(s.bookings.businessId, businessId)));
-  await db.insert(s.auditLog).values({
-    businessId,
-    actorUserId,
-    action: `booking.${status}`,
-    entity: "booking",
-    entityId: bookingId,
+  await db.transaction(async (tx) => {
+    await tx
+      .update(s.bookings)
+      .set({ status })
+      .where(and(eq(s.bookings.id, bookingId), eq(s.bookings.businessId, businessId)));
+    await tx.insert(s.auditLog).values({
+      businessId,
+      actorUserId,
+      action: `booking.${status}`,
+      entity: "booking",
+      entityId: bookingId,
+    });
+
+    if (status !== "confirmed") {
+      // Nobody wants a reminder for an appointment that is no longer happening.
+      await cancelByDedupeKey(tx, `booking.reminder:${bookingId}`);
+    }
+    if (status === "cancelled") {
+      await enqueue(tx, {
+        businessId,
+        topic: "booking.cancelled",
+        payload: { bookingId },
+        dedupeKey: `booking.cancelled:${bookingId}`,
+      });
+    }
   });
   await publishCalendar(businessId, { type: "booking.updated", bookingId });
 }
