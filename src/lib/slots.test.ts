@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isoWeekday, localTimeToUtc, slotsForDay, tzOffsetMinutes } from "./slots";
 
-const H = 3600_000;
-const MIN = 60_000;
-
 describe("tzOffsetMinutes", () => {
   it("Almaty is UTC+5 (no DST)", () => {
     expect(tzOffsetMinutes("Asia/Almaty", Date.UTC(2026, 0, 15))).toBe(300);
