@@ -83,6 +83,16 @@ async function main() {
   await page.waitForSelector("table tbody tr");
   await shot(page, "05-clients");
 
+  // 7. Analytics
+  await page.goto(`${BASE}/admin/analytics`, admin);
+  await page.waitForSelector("svg .recharts-line", { timeout: 15_000 });
+  await shot(page, "06-analytics");
+
+  // 8. Notification queue
+  await page.goto(`${BASE}/admin/notifications`, admin);
+  await page.waitForSelector("h1");
+  await shot(page, "07-notifications");
+
   await browser.close();
   console.log(`Screenshots written to ${OUT}/`);
 }
