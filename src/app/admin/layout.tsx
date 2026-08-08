@@ -8,6 +8,7 @@ const nav = [
   ["/admin/services", "Услуги"],
   ["/admin/staff", "Мастера"],
   ["/admin/reports", "Отчёты"],
+  ["/admin/notifications", "Уведомления"],
   ["/admin/audit", "Журнал"],
 ] as const;
 
