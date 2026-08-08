@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# kezek
 
-## Getting Started
+Online booking platform for service businesses (salons, barbershops, clinics) — **Next.js 16 · PostgreSQL · Redis · Tailwind CSS**.
 
-First, run the development server:
+Clients book a service in a 4-step wizard; the business runs its day from an admin panel with a live calendar, CRM, and revenue reports. Kazakh «кезек» = "queue".
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Why it's interesting under the hood
+
+**Double-booking is prevented twice.** When a client picks a slot, the app places a short-lived **Redis hold** (`SET NX EX`, cart-style reservation with a visible countdown) — the first line of defense. The final insert is guarded by a PostgreSQL **exclusion constraint**:
+
+```sql
+ALTER TABLE bookings ADD CONSTRAINT bookings_no_overlap
+  EXCLUDE USING gist (staff_id WITH =, tstzrange(start_at, end_at) WITH &&)
+  WHERE (status = 'confirmed');
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Even a race that slips past Redis cannot corrupt the calendar — the database rejects overlap at the transaction level (surfaced to the API as `409 slot_taken`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**The admin calendar updates live.** Every booking publishes to Redis **pub/sub**; an **SSE** route streams events to the browser, which re-renders the server components. A booking made on a phone appears on the receptionist's screen without a reload.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**The slot engine is pure and unit-tested.** Slot generation (working hours → staff overrides → busy ranges → holds → grid) is plain TypeScript with no I/O, 12 Vitest cases including DST transitions. Timezone math uses the `Intl` API — no date libraries.
 
-## Learn More
+**Redis does real work**: slot holds, session store (opaque tokens, httpOnly cookie, sliding TTL), per-IP rate limiting on every public endpoint, and pub/sub fan-out.
 
-To learn more about Next.js, take a look at the following resources:
+## Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router, RSC, server actions, route handlers) |
+| Database | PostgreSQL 16 + Drizzle ORM (10 tables, generated + hand-written migrations) |
+| Cache / realtime | Redis 7 (ioredis): holds, sessions, rate limits, pub/sub → SSE |
+| UI | Tailwind CSS 4, Recharts |
+| Auth | bcrypt + Redis-backed sessions, middleware-gated `/admin` |
+| Tests | Vitest (pure slot engine), CI: lint + test + migrate + seed + build |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Run it
 
-## Deploy on Vercel
+```bash
+docker compose up -d        # postgres :5433, redis :6379
+cp .env.example .env
+pnpm install
+pnpm db:migrate && pnpm db:seed
+pnpm dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Public booking: http://localhost:3000/aruzhan
+- Admin: http://localhost:3000/admin — `owner@kezek.dev` / `kezek-demo`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Features
+
+- **Public wizard** `/[slug]` — service → master → date/slot → contacts; slot held for 5 min with countdown; graceful recovery when a slot is stolen mid-checkout
+- **Admin calendar** — per-master day view, live SSE refresh, one-click status changes (completed / no-show / cancelled)
+- **CRM** — clients with visit counts, no-show history, lifetime spend (SQL aggregates)
+- **Catalog** — services CRUD, masters, per-master service assignment (M:N), soft hide
+- **Reports** — 30-day revenue chart, per-service breakdown, no-show rate
+- **Audit log** — every mutation recorded with actor and metadata
+- **Public API** — versionless JSON endpoints (`catalog`, `slots`, `hold`, `book`), all rate-limited, Zod-validated
+
+## Schema
+
+`users`, `businesses`, `business_hours`, `staff`, `staff_hours` (per-master overrides), `services`, `staff_services` (M:N), `clients` (unique per business+phone), `bookings` (exclusion-constrained), `audit_log` — multi-tenant by design: every row hangs off a `business_id`.
