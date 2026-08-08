@@ -43,6 +43,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm test
+      # Integration tests build their own database from the migrations and talk
+      # to the live Postgres and Redis services above.
+      - run: pnpm test:integration
       - run: pnpm db:migrate
       - run: pnpm db:seed
       - run: pnpm build
