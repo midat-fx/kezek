@@ -8,6 +8,76 @@ type Hold = { holdToken: string; expiresInSec: number; slot: Slot };
 
 const fmtPrice = (kzt: number) => `${kzt.toLocaleString("ru-RU")} ₸`;
 
+/** Offered instead of an empty slot grid: a full day is a lead, not a dead end. */
+function WaitlistBox({
+  slug,
+  serviceId,
+  staffId,
+  date,
+}: {
+  slug: string;
+  serviceId: string;
+  staffId: string;
+  date: string;
+}) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "joined" | "error">("idle");
+
+  if (state === "joined") {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        Вы в листе ожидания на {date}. Как только время освободится, мы напишем вам первым — у вас
+        будет 15 минут, чтобы его забрать.
+      </div>
+    );
+  }
+
+  async function submit() {
+    setState("sending");
+    const res = await fetch(`/api/public/${slug}/waitlist`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ serviceId, staffId, date, name, phone }),
+    });
+    setState(res.ok ? "joined" : "error");
+  }
+
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white p-4">
+      <p className="text-sm text-zinc-700">
+        На этот день всё занято. Встаньте в лист ожидания — если кто-то отменит запись, время
+        предложат вам.
+      </p>
+      <div className="mt-3 space-y-2">
+        <input
+          placeholder="Имя"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full rounded-lg border border-zinc-300 px-3 py-2"
+        />
+        <input
+          placeholder="+7701…"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full rounded-lg border border-zinc-300 px-3 py-2"
+        />
+        <button
+          onClick={submit}
+          disabled={state === "sending" || !name.trim() || !phone.trim()}
+          className="w-full rounded-lg border border-zinc-900 px-4 py-2 text-zinc-900 disabled:opacity-50"
+        >
+          {state === "sending" ? "Записываем…" : "Встать в лист ожидания"}
+        </button>
+        {state === "error" && (
+          <p className="text-sm text-red-600">Не получилось — проверьте телефон и попробуйте ещё</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function BookingWizard({ slug, timezone }: { slug: string; timezone: string }) {
   const [services, setServices] = useState<Service[] | null>(null);
   const [service, setService] = useState<Service | null>(null);
@@ -212,7 +282,12 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
           {!slots ? (
             <p className="text-sm text-zinc-400">Загрузка…</p>
           ) : slots.length === 0 ? (
-            <p className="text-sm text-zinc-500">Нет свободного времени — попробуйте другой день</p>
+            <WaitlistBox
+              slug={slug}
+              serviceId={service.id}
+              staffId={master.id}
+              date={date}
+            />
           ) : (
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
               {slots.map((slot) => (

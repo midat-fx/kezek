@@ -2,6 +2,7 @@ import "server-only";
 import { eq } from "drizzle-orm";
 import { db, schema as s } from "@/db";
 import { channelFor, type Delivery } from "./channels";
+import { expireOffer, offerFreedSlot } from "@/lib/waitlist";
 import type { ClaimedMessage } from "@/lib/outbox";
 
 type Rendered = Omit<Delivery, "businessId" | "outboxId">;
@@ -78,12 +79,70 @@ export async function render(msg: ClaimedMessage): Promise<Rendered | null> {
       };
     }
 
+    case "waitlist.offer": {
+      const o = await offerContext(payload.entryId);
+      if (!o || o.status !== "offered") return null;
+      return {
+        channel: "sms",
+        recipient: o.clientPhone,
+        subject: `${o.businessName}: освободилось время`,
+        body:
+          `${o.clientName}, освободилось время на «${o.serviceName}»: ` +
+          `${fmt(o.offerSlotStartAt!.getTime(), o.timezone)} у мастера ${o.staffName}. ` +
+          `Подтвердите до ${fmt(o.offerExpiresAt!.getTime(), o.timezone)}: /w/${o.offerToken}`,
+      };
+    }
+
     default:
       throw new Error(`No renderer for outbox topic "${msg.topic}"`);
   }
 }
 
+async function offerContext(entryId: string) {
+  const [row] = await db
+    .select({
+      status: s.waitlistEntries.status,
+      offerToken: s.waitlistEntries.offerToken,
+      offerSlotStartAt: s.waitlistEntries.offerSlotStartAt,
+      offerExpiresAt: s.waitlistEntries.offerExpiresAt,
+      clientName: s.clients.name,
+      clientPhone: s.clients.phone,
+      serviceName: s.services.name,
+      staffName: s.staff.name,
+      businessName: s.businesses.name,
+      timezone: s.businesses.timezone,
+    })
+    .from(s.waitlistEntries)
+    .innerJoin(s.clients, eq(s.waitlistEntries.clientId, s.clients.id))
+    .innerJoin(s.services, eq(s.waitlistEntries.serviceId, s.services.id))
+    .innerJoin(s.staff, eq(s.waitlistEntries.offerStaffId, s.staff.id))
+    .innerJoin(s.businesses, eq(s.waitlistEntries.businessId, s.businesses.id))
+    .where(eq(s.waitlistEntries.id, entryId));
+  return row;
+}
+
+/**
+ * Topics that perform work rather than send a message. Keeping them in the
+ * outbox means the whole waitlist chain — free a slot, offer it, wait out the
+ * deadline, move to the next person — inherits its retries and its scheduling.
+ */
+const effects: Record<string, (msg: ClaimedMessage) => Promise<void>> = {
+  "waitlist.slot_freed": async (msg) => {
+    const p = msg.payload as { staffId: string; serviceId: string; startMs: number; endMs: number };
+    await offerFreedSlot(msg.businessId, p);
+  },
+  "waitlist.offer_expired": async (msg) => {
+    await expireOffer((msg.payload as { entryId: string }).entryId);
+  },
+};
+
 export async function deliver(msg: ClaimedMessage): Promise<"sent" | "skipped"> {
+  const effect = effects[msg.topic];
+  if (effect) {
+    await effect(msg);
+    return "skipped"; // work done, nothing was sent to a human
+  }
+
   const rendered = await render(msg);
   if (!rendered) return "skipped";
   await channelFor(rendered.channel).send({

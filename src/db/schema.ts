@@ -122,6 +122,40 @@ export const bookings = pgTable("bookings", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const waitlistStatuses = ["waiting", "offered", "booked", "expired", "cancelled"] as const;
+
+/**
+ * A client who wants a day that is already full. When a booking is cancelled
+ * the freed slot is offered down this queue, oldest entry first, each offer
+ * held for a limited time before it moves on.
+ */
+export const waitlistEntries = pgTable(
+  "waitlist_entries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    businessId: uuid("business_id").notNull().references(() => businesses.id, { onDelete: "cascade" }),
+    serviceId: uuid("service_id").notNull().references(() => services.id, { onDelete: "cascade" }),
+    // null = any master who performs the service
+    staffId: uuid("staff_id").references(() => staff.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+    dateISO: text("date_iso").notNull(), // local date at the business, YYYY-MM-DD
+    status: text("status", { enum: waitlistStatuses }).notNull().default("waiting"),
+    // Set while an offer is outstanding
+    offerToken: text("offer_token"),
+    // Redis hold reserving the slot for this client while the offer stands
+    offerHoldToken: text("offer_hold_token"),
+    offerSlotStartAt: timestamp("offer_slot_start_at", { withTimezone: true }),
+    offerSlotEndAt: timestamp("offer_slot_end_at", { withTimezone: true }),
+    offerExpiresAt: timestamp("offer_expires_at", { withTimezone: true }),
+    offerStaffId: uuid("offer_staff_id").references(() => staff.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("waitlist_offer_token_unique").on(t.offerToken),
+    index("waitlist_queue_idx").on(t.businessId, t.dateISO, t.status, t.createdAt),
+  ],
+);
+
 export const outboxStatuses = ["pending", "processing", "sent", "dead", "cancelled"] as const;
 
 /**

@@ -234,10 +234,12 @@ export async function setBookingStatus(opts: {
 }): Promise<void> {
   const { businessId, bookingId, status, actorUserId } = opts;
   await db.transaction(async (tx) => {
-    await tx
+    const [updated] = await tx
       .update(s.bookings)
       .set({ status })
-      .where(and(eq(s.bookings.id, bookingId), eq(s.bookings.businessId, businessId)));
+      .where(and(eq(s.bookings.id, bookingId), eq(s.bookings.businessId, businessId)))
+      .returning();
+    if (!updated) return;
     await tx.insert(s.auditLog).values({
       businessId,
       actorUserId,
@@ -256,6 +258,21 @@ export async function setBookingStatus(opts: {
         topic: "booking.cancelled",
         payload: { bookingId },
         dedupeKey: `booking.cancelled:${bookingId}`,
+      });
+      // The time is free again — offer it down the waitlist before it goes
+      // back into public stock. Enqueued rather than called directly: keeps
+      // this transaction pure SQL, and keeps booking.ts free of a dependency
+      // on waitlist.ts (which already depends on this file).
+      await enqueue(tx, {
+        businessId,
+        topic: "waitlist.slot_freed",
+        payload: {
+          staffId: updated.staffId,
+          serviceId: updated.serviceId,
+          startMs: updated.startAt.getTime(),
+          endMs: updated.endAt.getTime(),
+        },
+        dedupeKey: `waitlist.freed:${bookingId}`,
       });
     }
   });
