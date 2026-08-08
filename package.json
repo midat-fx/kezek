@@ -13,7 +13,8 @@
     "test": "vitest run --config vitest.config.ts",
     "screenshots": "tsx scripts/screenshots.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "test:all": "pnpm test && pnpm test:integration"
+    "test:all": "pnpm test && pnpm test:integration",
+    "worker": "tsx scripts/worker.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

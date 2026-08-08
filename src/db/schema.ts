@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   integer,
   jsonb,
   pgTable,
@@ -118,6 +119,49 @@ export const bookings = pgTable("bookings", {
   status: text("status", { enum: bookingStatuses }).notNull().default("confirmed"),
   priceKzt: integer("price_kzt").notNull(), // snapshot of service price at booking time
   note: text("note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const outboxStatuses = ["pending", "processing", "sent", "dead", "cancelled"] as const;
+
+/**
+ * Transactional outbox. Rows are written in the same transaction as the
+ * business change they describe, so a booking and its confirmation can never
+ * disagree about whether they happened. A worker drains them separately.
+ */
+export const outbox = pgTable(
+  "outbox",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    businessId: uuid("business_id").notNull().references(() => businesses.id, { onDelete: "cascade" }),
+    topic: text("topic").notNull(), // booking.confirmed, booking.reminder, waitlist.offer, …
+    payload: jsonb("payload").notNull(),
+    // Natural key of the thing this message is about. Lets callers enqueue
+    // idempotently and cancel a scheduled message that is no longer wanted.
+    dedupeKey: text("dedupe_key"),
+    availableAt: timestamp("available_at", { withTimezone: true }).notNull().defaultNow(),
+    status: text("status", { enum: outboxStatuses }).notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    maxAttempts: integer("max_attempts").notNull().default(5),
+    lastError: text("last_error"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("outbox_dedupe_key_unique").on(t.dedupeKey),
+    index("outbox_claim_idx").on(t.status, t.availableAt),
+  ],
+);
+
+/** Everything a channel actually delivered — the demo's stand-in for an ESP. */
+export const messageLog = pgTable("message_log", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  businessId: uuid("business_id").notNull().references(() => businesses.id, { onDelete: "cascade" }),
+  outboxId: uuid("outbox_id").references(() => outbox.id, { onDelete: "set null" }),
+  channel: text("channel", { enum: ["email", "sms"] }).notNull(),
+  recipient: text("recipient").notNull(),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
