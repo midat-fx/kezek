@@ -52,8 +52,8 @@ export async function render(msg: ClaimedMessage): Promise<Rendered | null> {
       return {
         channel: "sms",
         recipient: b.clientPhone,
-        subject: `${b.businessName}: запись подтверждена`,
-        body: `${b.clientName}, вы записаны на «${b.serviceName}» к мастеру ${b.staffName}: ${fmt(b.startAt.getTime(), b.timezone)}.`,
+        subject: `${b.businessName}: booking confirmed`,
+        body: `${b.clientName}, you are booked for “${b.serviceName}” with ${b.staffName}: ${fmt(b.startAt.getTime(), b.timezone)}.`,
       };
     }
 
@@ -63,8 +63,8 @@ export async function render(msg: ClaimedMessage): Promise<Rendered | null> {
       return {
         channel: "sms",
         recipient: b.clientPhone,
-        subject: `${b.businessName}: напоминание`,
-        body: `${b.clientName}, напоминаем: «${b.serviceName}» у мастера ${b.staffName} завтра, ${fmt(b.startAt.getTime(), b.timezone)}.`,
+        subject: `${b.businessName}: reminder`,
+        body: `${b.clientName}, a reminder: “${b.serviceName}” with ${b.staffName} tomorrow, ${fmt(b.startAt.getTime(), b.timezone)}.`,
       };
     }
 
@@ -74,8 +74,8 @@ export async function render(msg: ClaimedMessage): Promise<Rendered | null> {
       return {
         channel: "sms",
         recipient: b.clientPhone,
-        subject: `${b.businessName}: запись отменена`,
-        body: `${b.clientName}, ваша запись на ${fmt(b.startAt.getTime(), b.timezone)} отменена.`,
+        subject: `${b.businessName}: booking cancelled`,
+        body: `${b.clientName}, your booking for ${fmt(b.startAt.getTime(), b.timezone)} has been cancelled.`,
       };
     }
 
@@ -85,11 +85,11 @@ export async function render(msg: ClaimedMessage): Promise<Rendered | null> {
       return {
         channel: "sms",
         recipient: o.clientPhone,
-        subject: `${o.businessName}: освободилось время`,
+        subject: `${o.businessName}: a slot has opened up`,
         body:
-          `${o.clientName}, освободилось время на «${o.serviceName}»: ` +
-          `${fmt(o.offerSlotStartAt!.getTime(), o.timezone)} у мастера ${o.staffName}. ` +
-          `Подтвердите до ${fmt(o.offerExpiresAt!.getTime(), o.timezone)}: /w/${o.offerToken}`,
+          `${o.clientName}, a slot opened up for “${o.serviceName}”: ` +
+          `${fmt(o.offerSlotStartAt!.getTime(), o.timezone)} with ${o.staffName}. ` +
+          `Confirm before ${fmt(o.offerExpiresAt!.getTime(), o.timezone)}: /w/${o.offerToken}`,
       };
     }
 

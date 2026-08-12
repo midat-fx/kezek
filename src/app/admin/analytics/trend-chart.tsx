@@ -24,14 +24,14 @@ export function TrendChart({ data }: { data: RevenuePoint[] }) {
             tick={{ fontSize: 11 }}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(v: number) => `${Math.round(v / 1000)}к`}
+            tickFormatter={(v: number) => `${Math.round(v / 1000)}k`}
           />
           <Tooltip formatter={(v, name) => [`${Number(v).toLocaleString("ru-RU")} ₸`, name]} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey="revenue" name="Выручка" fill="#d4d4d8" isAnimationActive={false} />
+          <Bar dataKey="revenue" name="Revenue" fill="#d4d4d8" isAnimationActive={false} />
           <Line
             dataKey="movingAvg"
-            name="Среднее за 7 дней"
+            name="7-day average"
             stroke="#18181b"
             strokeWidth={2}
             dot={false}

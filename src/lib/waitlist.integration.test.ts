@@ -110,7 +110,7 @@ describe("offering a freed slot", () => {
     expect(free.map((sl) => sl.startMs)).not.toContain(slotAt().startMs);
 
     const sms = await messages();
-    expect(sms.some((m) => m.recipient === "+77012222222" && m.subject.includes("освободилось")))
+    expect(sms.some((m) => m.recipient === "+77012222222" && m.subject.includes("a slot has opened up")))
       .toBe(true);
   });
 

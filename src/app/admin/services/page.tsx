@@ -13,7 +13,7 @@ export default async function ServicesPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="mb-4 text-xl font-semibold">Услуги</h1>
+      <h1 className="mb-4 text-xl font-semibold">Services</h1>
       <div className="space-y-2">
         {rows.map((svc) => (
           <form
@@ -24,25 +24,25 @@ export default async function ServicesPage() {
             <input type="hidden" name="id" value={svc.id} />
             <input name="name" defaultValue={svc.name} className="min-w-40 flex-1 rounded-lg border border-zinc-300 px-2 py-1" />
             <input name="durationMin" type="number" defaultValue={svc.durationMin} min={5} step={5} className="w-20 rounded-lg border border-zinc-300 px-2 py-1" />
-            <span className="text-sm text-zinc-400">мин</span>
+            <span className="text-sm text-zinc-400">min</span>
             <input name="priceKzt" type="number" defaultValue={svc.priceKzt} min={0} step={500} className="w-28 rounded-lg border border-zinc-300 px-2 py-1" />
             <span className="text-sm text-zinc-400">₸</span>
-            <button className="rounded-lg bg-zinc-900 px-3 py-1 text-sm text-white">Сохранить</button>
+            <button className="rounded-lg bg-zinc-900 px-3 py-1 text-sm text-white">Save</button>
             <button formAction={toggleService} className="rounded-lg border border-zinc-300 px-3 py-1 text-sm">
-              {svc.isActive ? "Скрыть" : "Вернуть"}
+              {svc.isActive ? "Hide" : "Restore"}
             </button>
           </form>
         ))}
       </div>
 
-      <h2 className="mt-6 mb-2 font-medium text-zinc-700">Новая услуга</h2>
+      <h2 className="mt-6 mb-2 font-medium text-zinc-700">New service</h2>
       <form action={saveService} className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-zinc-300 p-3">
-        <input name="name" placeholder="Название" required className="min-w-40 flex-1 rounded-lg border border-zinc-300 px-2 py-1" />
+        <input name="name" placeholder="Name" required className="min-w-40 flex-1 rounded-lg border border-zinc-300 px-2 py-1" />
         <input name="durationMin" type="number" placeholder="60" required min={5} step={5} className="w-20 rounded-lg border border-zinc-300 px-2 py-1" />
-        <span className="text-sm text-zinc-400">мин</span>
+        <span className="text-sm text-zinc-400">min</span>
         <input name="priceKzt" type="number" placeholder="8000" required min={0} step={500} className="w-28 rounded-lg border border-zinc-300 px-2 py-1" />
         <span className="text-sm text-zinc-400">₸</span>
-        <button className="rounded-lg bg-zinc-900 px-3 py-1 text-sm text-white">Добавить</button>
+        <button className="rounded-lg bg-zinc-900 px-3 py-1 text-sm text-white">Add</button>
       </form>
     </div>
   );

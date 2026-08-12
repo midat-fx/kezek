@@ -20,7 +20,7 @@ export default async function StaffPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="mb-4 text-xl font-semibold">Мастера</h1>
+      <h1 className="mb-4 text-xl font-semibold">Staff</h1>
       <div className="space-y-3">
         {masters.map((m) => (
           <div key={m.id} className={`rounded-xl border border-zinc-200 bg-white p-4 ${m.isActive ? "" : "opacity-50"}`}>
@@ -29,7 +29,7 @@ export default async function StaffPage() {
               <form action={toggleStaff}>
                 <input type="hidden" name="id" value={m.id} />
                 <button className="rounded-lg border border-zinc-300 px-3 py-1 text-sm">
-                  {m.isActive ? "Скрыть" : "Вернуть"}
+                  {m.isActive ? "Hide" : "Restore"}
                 </button>
               </form>
             </div>
@@ -55,10 +55,10 @@ export default async function StaffPage() {
         ))}
       </div>
 
-      <h2 className="mt-6 mb-2 font-medium text-zinc-700">Новый мастер</h2>
+      <h2 className="mt-6 mb-2 font-medium text-zinc-700">New staff member</h2>
       <form action={saveStaff} className="flex gap-2 rounded-xl border border-dashed border-zinc-300 p-3">
-        <input name="name" placeholder="Имя" required className="flex-1 rounded-lg border border-zinc-300 px-2 py-1" />
-        <button className="rounded-lg bg-zinc-900 px-3 py-1 text-sm text-white">Добавить</button>
+        <input name="name" placeholder="Name" required className="flex-1 rounded-lg border border-zinc-300 px-2 py-1" />
+        <button className="rounded-lg bg-zinc-900 px-3 py-1 text-sm text-white">Add</button>
       </form>
     </div>
   );

@@ -36,10 +36,10 @@ export default async function NotificationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">Уведомления</h1>
+        <h1 className="text-xl font-semibold">Notifications</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Сообщения кладутся в очередь в той же транзакции, что и сама бронь, и уходят отдельным
-          воркером (<code className="rounded bg-zinc-100 px-1">pnpm worker</code>).
+          Messages are queued inside the same transaction as the booking itself and delivered by a separate
+          worker (<code className="rounded bg-zinc-100 px-1">pnpm worker</code>).
         </p>
       </div>
 
@@ -49,20 +49,20 @@ export default async function NotificationsPage() {
             {status}: {n}
           </span>
         ))}
-        {queue.length === 0 && <span className="text-zinc-400">Очередь пуста</span>}
+        {queue.length === 0 && <span className="text-zinc-400">Queue is empty</span>}
       </div>
 
       <section>
-        <h2 className="mb-2 font-medium text-zinc-700">Очередь</h2>
+        <h2 className="mb-2 font-medium text-zinc-700">Queue</h2>
         <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
           <table className="w-full text-sm">
             <thead className="border-b border-zinc-200 text-left text-zinc-500">
               <tr>
-                <th className="p-3">Тема</th>
-                <th className="p-3">Статус</th>
-                <th className="p-3 text-right">Попыток</th>
-                <th className="p-3">Отправить в</th>
-                <th className="p-3">Ошибка</th>
+                <th className="p-3">Subject</th>
+                <th className="p-3">Status</th>
+                <th className="p-3 text-right">Attempts</th>
+                <th className="p-3">Send at</th>
+                <th className="p-3">Error</th>
               </tr>
             </thead>
             <tbody>
@@ -87,11 +87,11 @@ export default async function NotificationsPage() {
       </section>
 
       <section>
-        <h2 className="mb-2 font-medium text-zinc-700">Доставлено</h2>
+        <h2 className="mb-2 font-medium text-zinc-700">Delivered</h2>
         <div className="space-y-2">
           {delivered.length === 0 && (
             <p className="rounded-xl border border-dashed border-zinc-300 p-6 text-center text-zinc-400">
-              Пока ничего не отправлено — запустите <code>pnpm worker</code>
+              Nothing delivered yet — run <code>pnpm worker</code>
             </p>
           )}
           {delivered.map((m) => (
