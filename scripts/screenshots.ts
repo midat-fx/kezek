@@ -17,6 +17,37 @@ async function waitForSlots(page: { waitForFunction: (fn: string) => Promise<unk
   );
 }
 
+/**
+ * Steps the date picker forward until a day with free slots shows up. The seed
+ * is random enough that the first day can be fully booked for this master.
+ */
+async function pickDayWithSlots(page: Page, maxDays = 10) {
+  for (let day = 0; day < maxDays; day++) {
+    const hasSlots = await page.evaluate(() =>
+      [...document.querySelectorAll("button")].some((b) =>
+        /^\d{2}:\d{2}$/.test(b.textContent?.trim() ?? ""),
+      ),
+    );
+    if (hasSlots) return;
+    await page.evaluate(() => {
+      const input = document.querySelector<HTMLInputElement>('input[type="date"]');
+      if (!input) return;
+      const next = new Date(`${input.value}T00:00:00Z`);
+      next.setUTCDate(next.getUTCDate() + 1);
+      // React tracks the value on the node, so set it through the native setter.
+      const setValue = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      setValue?.call(input, next.toISOString().slice(0, 10));
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await new Promise((r) => setTimeout(r, 700));
+  }
+  throw new Error(`No day with free slots within ${maxDays} days — reseed the database.`);
+}
+
 /** Screenshot clipped to the actual content height — no acres of empty page. */
 async function shot(page: Page, name: string) {
   const height = await page.evaluate(
@@ -38,8 +69,9 @@ async function main() {
 
   // 1. Public booking wizard, mid-flow (service + master picked, slots visible)
   await page.goto(`${BASE}/aruzhan`, { waitUntil: "networkidle0" });
-  await page.locator("button ::-p-text(Женская стрижка)").click();
+  await page.locator("button ::-p-text(Women's haircut)").click();
   await page.locator("button ::-p-text(Dana)").click();
+  await pickDayWithSlots(page);
   await waitForSlots(page);
   await shot(page, "01-booking-wizard");
 
@@ -52,7 +84,7 @@ async function main() {
     );
     slot?.click();
   });
-  await page.waitForSelector('input[placeholder="Имя"]');
+  await page.waitForSelector('input[placeholder="Name"]');
   await shot(page, "02-slot-hold");
 
   // 3. Admin login
@@ -70,7 +102,7 @@ async function main() {
 
   // 4. Admin calendar
   await page.goto(`${BASE}/admin`, admin);
-  await page.waitForSelector("h1 ::-p-text(Календарь)");
+  await page.waitForSelector("h1 ::-p-text(Calendar)");
   await shot(page, "03-admin-calendar");
 
   // 5. Reports (wait for the chart bars to render)

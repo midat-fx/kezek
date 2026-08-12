@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "kezek — онлайн-запись",
-  description: "Онлайн-запись для сервисного бизнеса: слоты, брони, отчёты",
+  title: "kezek — online booking",
+  description: "Online booking for service businesses: slots, bookings, reports",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -19,29 +19,29 @@ export default async function AnalyticsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold">Аналитика</h1>
+        <h1 className="text-xl font-semibold">Analytics</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Оконные функции Postgres: скользящее среднее, накопительный итог, ранги и когорты.
+          Postgres window functions: trailing mean, running total, ranks and cohorts.
         </p>
       </div>
 
       <section className="rounded-xl border border-zinc-200 bg-white p-4">
-        <h2 className="mb-1 font-medium text-zinc-700">Выручка за 30 дней</h2>
+        <h2 className="mb-1 font-medium text-zinc-700">Revenue, last 30 days</h2>
         <p className="mb-3 text-xs text-zinc-500">
-          Столбцы — факт по дням, линия — среднее за 7 дней (сглаживает недельную пилу).
+          Bars are daily actuals; the line is a 7-day trailing mean, which smooths the weekly saw-tooth.
         </p>
         <TrendChart data={trend} />
       </section>
 
       <section>
-        <h2 className="mb-2 font-medium text-zinc-700">Загрузка мастеров · 30 дней</h2>
+        <h2 className="mb-2 font-medium text-zinc-700">Staff utilization · 30 days</h2>
         <div className="space-y-2">
           {util.map((u) => (
             <div key={u.staffId} className="rounded-xl border border-zinc-200 bg-white p-3">
               <div className="flex items-baseline justify-between text-sm">
                 <span className="font-medium">{u.staffName}</span>
                 <span className="text-zinc-500">
-                  {Math.round(u.bookedMinutes / 60)} ч из {Math.round(u.availableMinutes / 60)} ч ·{" "}
+                  {Math.round(u.bookedMinutes / 60)} h of {Math.round(u.availableMinutes / 60)} h ·{" "}
                   {kzt(u.revenue)}
                 </span>
               </div>
@@ -56,23 +56,23 @@ export default async function AnalyticsPage() {
           ))}
           {util.length === 0 && (
             <p className="rounded-xl border border-dashed border-zinc-300 p-6 text-center text-zinc-400">
-              Нет активных мастеров
+              No active staff
             </p>
           )}
         </div>
       </section>
 
       <section>
-        <h2 className="mb-2 font-medium text-zinc-700">Удержание по когортам</h2>
+        <h2 className="mb-2 font-medium text-zinc-700">Cohort retention</h2>
         <p className="mb-2 text-xs text-zinc-500">
-          Строка — месяц первого визита. Столбец — сколько из них вернулись через N месяцев.
+          Each row is a month of first visit; each column, how many of them came back N months later.
         </p>
         <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
           <table className="w-full text-sm">
             <thead className="border-b border-zinc-200 text-left text-zinc-500">
               <tr>
-                <th className="p-3">Когорта</th>
-                <th className="p-3 text-right">Клиентов</th>
+                <th className="p-3">Cohort</th>
+                <th className="p-3 text-right">Clients</th>
                 {Array.from({ length: widest }, (_, i) => (
                   <th key={i} className="p-3 text-right">
                     +{i}
@@ -103,7 +103,7 @@ export default async function AnalyticsPage() {
               {cohortRows.length === 0 && (
                 <tr>
                   <td className="p-6 text-center text-zinc-400" colSpan={2 + widest}>
-                    Пока нет выполненных визитов
+                    No completed visits yet
                   </td>
                 </tr>
               )}
@@ -113,16 +113,16 @@ export default async function AnalyticsPage() {
       </section>
 
       <section>
-        <h2 className="mb-2 font-medium text-zinc-700">Ключевые клиенты</h2>
+        <h2 className="mb-2 font-medium text-zinc-700">Top clients</h2>
         <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
           <table className="w-full text-sm">
             <thead className="border-b border-zinc-200 text-left text-zinc-500">
               <tr>
                 <th className="p-3">#</th>
-                <th className="p-3">Клиент</th>
-                <th className="p-3 text-right">Визитов</th>
-                <th className="p-3 text-right">Выручка</th>
-                <th className="p-3 text-right">Накопленная доля</th>
+                <th className="p-3">Client</th>
+                <th className="p-3 text-right">Visits</th>
+                <th className="p-3 text-right">Revenue</th>
+                <th className="p-3 text-right">Cumulative share</th>
               </tr>
             </thead>
             <tbody>

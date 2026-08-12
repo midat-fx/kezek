@@ -44,8 +44,8 @@ export default async function WaitlistOfferPage(ctx: {
     return shell(
       <>
         <div className="text-4xl">✅</div>
-        <h1 className="mt-2 text-xl font-semibold text-zinc-900">Время закреплено за вами</h1>
-        <p className="mt-2 text-zinc-600">Мы отправили подтверждение в SMS.</p>
+        <h1 className="mt-2 text-xl font-semibold text-zinc-900">The slot is yours</h1>
+        <p className="mt-2 text-zinc-600">We sent a confirmation by SMS.</p>
       </>,
     );
   }
@@ -54,9 +54,9 @@ export default async function WaitlistOfferPage(ctx: {
     return shell(
       <>
         <div className="text-4xl">⌛</div>
-        <h1 className="mt-2 text-xl font-semibold text-zinc-900">Предложение больше не активно</h1>
+        <h1 className="mt-2 text-xl font-semibold text-zinc-900">This offer is no longer active</h1>
         <p className="mt-2 text-zinc-600">
-          Время уже предложено следующему в очереди. Вы остаётесь в листе ожидания.
+          The slot has moved on to the next person in the queue. You are still on the waitlist.
         </p>
       </>,
     );
@@ -72,16 +72,16 @@ export default async function WaitlistOfferPage(ctx: {
     <>
       <h1 className="text-xl font-semibold text-zinc-900">{entry.businessName}</h1>
       <p className="mt-4 text-zinc-700">
-        Освободилось время на «{entry.serviceName}» у мастера {entry.staffName}:
+        A slot opened up for “{entry.serviceName}” with {entry.staffName}:
       </p>
       <p className="mt-1 text-lg font-semibold">{fmt.format(entry.offerSlotStartAt!)}</p>
       <p className="mt-2 text-sm text-zinc-500">
-        Предложение действует до {fmt.format(entry.offerExpiresAt!)}
+        This offer is valid until {fmt.format(entry.offerExpiresAt!)}
       </p>
       <form action={accept}>
         <input type="hidden" name="token" value={token} />
         <button className="mt-5 w-full rounded-lg bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-700">
-          Беру это время
+          Claim this slot
         </button>
       </form>
     </>,

@@ -71,11 +71,11 @@ async function main() {
   const svc = await db
     .insert(s.services)
     .values([
-      { businessId: biz.id, name: "Женская стрижка", durationMin: 60, priceKzt: 8000 },
-      { businessId: biz.id, name: "Мужская стрижка", durationMin: 45, priceKzt: 5000 },
-      { businessId: biz.id, name: "Окрашивание", durationMin: 120, priceKzt: 25000 },
-      { businessId: biz.id, name: "Маникюр", durationMin: 90, priceKzt: 12000 },
-      { businessId: biz.id, name: "Укладка", durationMin: 40, priceKzt: 6000 },
+      { businessId: biz.id, name: "Women's haircut", durationMin: 60, priceKzt: 8000 },
+      { businessId: biz.id, name: "Men's haircut", durationMin: 45, priceKzt: 5000 },
+      { businessId: biz.id, name: "Hair coloring", durationMin: 120, priceKzt: 25000 },
+      { businessId: biz.id, name: "Manicure", durationMin: 90, priceKzt: 12000 },
+      { businessId: biz.id, name: "Blow-dry", durationMin: 40, priceKzt: 6000 },
     ])
     .returning();
 
@@ -90,14 +90,14 @@ async function main() {
   ]);
 
   const names = [
-    ["Аида", "+77011234501"],
-    ["Жанна", "+77011234502"],
-    ["Карина", "+77011234503"],
-    ["Сауле", "+77011234504"],
-    ["Инкар", "+77011234505"],
-    ["Томирис", "+77011234506"],
-    ["Асель", "+77011234507"],
-    ["Диана", "+77011234508"],
+    ["Aida", "+77011234501"],
+    ["Zhanna", "+77011234502"],
+    ["Karina", "+77011234503"],
+    ["Saule", "+77011234504"],
+    ["Inkar", "+77011234505"],
+    ["Tomiris", "+77011234506"],
+    ["Assel", "+77011234507"],
+    ["Diana", "+77011234508"],
   ] as const;
   const cls = await db
     .insert(s.clients)

@@ -14,10 +14,10 @@ const statusStyle: Record<string, string> = {
   no_show: "border-red-200 bg-red-50",
 };
 const statusLabel: Record<string, string> = {
-  confirmed: "подтверждена",
-  completed: "выполнена",
-  cancelled: "отменена",
-  no_show: "не пришла",
+  confirmed: "confirmed",
+  completed: "completed",
+  cancelled: "cancelled",
+  no_show: "no-show",
 };
 
 export default async function CalendarPage(ctx: {
@@ -77,7 +77,7 @@ export default async function CalendarPage(ctx: {
     <div>
       <LiveRefresh />
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-semibold">Календарь</h1>
+        <h1 className="text-xl font-semibold">Calendar</h1>
         <div className="flex items-center gap-1">
           <Link href={`/admin?date=${shift(-1)}`} className="rounded-lg border border-zinc-300 bg-white px-2 py-1">
             ←
@@ -88,13 +88,13 @@ export default async function CalendarPage(ctx: {
           </Link>
         </div>
         <span className="text-sm text-zinc-500">
-          {rows.length} записей · {rows.filter((r) => r.status === "confirmed").length} активных
+          {rows.length} bookings · {rows.filter((r) => r.status === "confirmed").length} active
         </span>
       </div>
 
       {rows.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 p-8 text-center text-zinc-400">
-          На {dateISO} записей нет
+          No bookings on {dateISO}
         </p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -120,9 +120,9 @@ export default async function CalendarPage(ctx: {
                         <div className="mt-2 flex gap-1">
                           {(
                             [
-                              ["completed", "✓ Выполнена"],
-                              ["no_show", "Не пришла"],
-                              ["cancelled", "Отмена"],
+                              ["completed", "✓ Completed"],
+                              ["no_show", "No-show"],
+                              ["cancelled", "Cancel"],
                             ] as const
                           ).map(([st, label]) => (
                             <form key={st} action={updateBookingStatus}>

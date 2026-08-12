@@ -21,16 +21,16 @@ export default async function ClientsPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-semibold">Клиенты · {rows.length}</h1>
+      <h1 className="mb-4 text-xl font-semibold">Clients · {rows.length}</h1>
       <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-200 text-left text-zinc-500">
             <tr>
-              <th className="p-3">Имя</th>
-              <th className="p-3">Телефон</th>
-              <th className="p-3 text-right">Визитов</th>
-              <th className="p-3 text-right">Не пришла</th>
-              <th className="p-3 text-right">Потрачено</th>
+              <th className="p-3">Name</th>
+              <th className="p-3">Phone</th>
+              <th className="p-3 text-right">Visits</th>
+              <th className="p-3 text-right">No-show</th>
+              <th className="p-3 text-right">Spent</th>
             </tr>
           </thead>
           <tbody>

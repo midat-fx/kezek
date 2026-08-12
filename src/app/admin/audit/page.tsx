@@ -22,13 +22,13 @@ export default async function AuditPage() {
   const fmt = new Intl.DateTimeFormat("ru-RU", { dateStyle: "short", timeStyle: "medium" });
   return (
     <div className="max-w-3xl">
-      <h1 className="mb-4 text-xl font-semibold">Журнал действий</h1>
+      <h1 className="mb-4 text-xl font-semibold">Audit log</h1>
       <div className="rounded-xl border border-zinc-200 bg-white">
         {rows.map((r) => (
           <div key={r.id} className="flex flex-wrap items-baseline gap-2 border-b border-zinc-100 p-3 text-sm last:border-0">
             <span className="text-zinc-400">{fmt.format(r.createdAt)}</span>
             <span className="font-mono font-medium">{r.action}</span>
-            <span className="text-zinc-500">{r.actor ?? "клиент (онлайн)"}</span>
+            <span className="text-zinc-500">{r.actor ?? "client (online)"}</span>
             {r.meta != null && (
               <span className="truncate text-xs text-zinc-400">{JSON.stringify(r.meta)}</span>
             )}

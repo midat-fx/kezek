@@ -62,15 +62,15 @@ export default async function ReportsPage() {
       : 0;
 
   const tiles = [
-    ["Выручка 30 дней", `${Number(counts.revenue).toLocaleString("ru-RU")} ₸`],
-    ["Выполнено", counts.completed],
-    ["Предстоит", counts.upcoming],
+    ["Revenue, 30 days", `${Number(counts.revenue).toLocaleString("en-US")} ₸`],
+    ["Completed", counts.completed],
+    ["Upcoming", counts.upcoming],
     ["No-show", `${counts.noShow} (${noShowRate}%)`],
   ] as const;
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-semibold">Отчёты · 30 дней</h1>
+      <h1 className="mb-4 text-xl font-semibold">Reports · 30 days</h1>
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tiles.map(([label, value]) => (
           <div key={label} className="rounded-xl border border-zinc-200 bg-white p-4">
@@ -81,12 +81,12 @@ export default async function ReportsPage() {
       </div>
 
       <section className="mb-6 rounded-xl border border-zinc-200 bg-white p-4">
-        <h2 className="mb-3 font-medium text-zinc-700">Выручка по дням</h2>
+        <h2 className="mb-3 font-medium text-zinc-700">Revenue by day</h2>
         <RevenueChart data={revenue.map((r) => ({ day: r.day.slice(5), total: Number(r.total) }))} />
       </section>
 
       <section className="max-w-xl rounded-xl border border-zinc-200 bg-white p-4">
-        <h2 className="mb-3 font-medium text-zinc-700">По услугам</h2>
+        <h2 className="mb-3 font-medium text-zinc-700">By service</h2>
         <table className="w-full text-sm">
           <tbody>
             {byService.map((r) => (
@@ -94,7 +94,7 @@ export default async function ReportsPage() {
                 <td className="py-2">{r.name}</td>
                 <td className="py-2 text-right text-zinc-500">{r.count}×</td>
                 <td className="py-2 text-right font-medium">
-                  {Number(r.total).toLocaleString("ru-RU")} ₸
+                  {Number(r.total).toLocaleString("en-US")} ₸
                 </td>
               </tr>
             ))}

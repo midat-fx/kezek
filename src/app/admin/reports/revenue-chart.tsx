@@ -12,9 +12,9 @@ export function RevenueChart({ data }: { data: { day: string; total: number }[] 
             tick={{ fontSize: 11 }}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(v: number) => `${Math.round(v / 1000)}к`}
+            tickFormatter={(v: number) => `${Math.round(v / 1000)}k`}
           />
-          <Tooltip formatter={(v) => [`${Number(v).toLocaleString("ru-RU")} ₸`, "Выручка"]} />
+          <Tooltip formatter={(v) => [`${Number(v).toLocaleString("en-US")} ₸`, "Revenue"]} />
           {/* no grow-in animation: the calendar refreshes live and replays it every time */}
           <Bar dataKey="total" fill="#18181b" radius={[4, 4, 0, 0]} isAnimationActive={false} />
         </BarChart>
