@@ -2,7 +2,10 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Neon on Vercel injects POSTGRES_URL next to DATABASE_URL; accept either.
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL ?? process.env.POSTGRES_URL,
+});
 
 export const db = drizzle(pool, { schema });
 export { schema };
