@@ -1,5 +1,7 @@
 # kezek
 
+[![CI](https://github.com/midat-fx/kezek/actions/workflows/ci.yml/badge.svg)](https://github.com/midat-fx/kezek/actions/workflows/ci.yml)
+
 Online booking platform for service businesses (salons, barbershops, clinics) — **Next.js 16 · PostgreSQL · Redis · Tailwind CSS**.
 
 Clients book a service in a 4-step wizard; the business runs its day from an admin panel with a live calendar, CRM, a waitlist that fills its own cancellations, and analytics. Kazakh «кезек» = "queue".
