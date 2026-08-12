@@ -100,7 +100,13 @@ calendar and reports have something in them the moment you log in.
 
 ## Deploy
 
-Runs on free tiers end to end — Vercel + Neon (Postgres) + Upstash (Redis). Step-by-step in [DEPLOY.md](DEPLOY.md), or:
+Runs on free tiers end to end — Vercel + Neon (Postgres) + Upstash (Redis).
+
+```bash
+./scripts/deploy.sh   # login, provision Postgres + Redis, deploy, migrate, seed
+```
+
+Step-by-step in [DEPLOY.md](DEPLOY.md), or one click:
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmidat-fx%2Fkezek&env=DATABASE_URL,REDIS_URL,SESSION_SECRET&envDescription=Postgres%20URL%20(Neon)%2C%20Redis%20URL%20(Upstash)%2C%20and%20a%20random%20session%20secret&envLink=https%3A%2F%2Fgithub.com%2Fmidat-fx%2Fkezek%2Fblob%2Fmain%2FDEPLOY.md)
 
