@@ -26,7 +26,7 @@ export function TrendChart({ data }: { data: RevenuePoint[] }) {
             axisLine={false}
             tickFormatter={(v: number) => `${Math.round(v / 1000)}k`}
           />
-          <Tooltip formatter={(v, name) => [`${Number(v).toLocaleString("ru-RU")} ₸`, name]} />
+          <Tooltip formatter={(v, name) => [`${Number(v).toLocaleString("en-GB")} ₸`, name]} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           <Bar dataKey="revenue" name="Revenue" fill="#d4d4d8" isAnimationActive={false} />
           <Line

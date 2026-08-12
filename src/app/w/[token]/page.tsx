@@ -62,7 +62,7 @@ export default async function WaitlistOfferPage(ctx: {
     );
   }
 
-  const fmt = new Intl.DateTimeFormat("ru-RU", {
+  const fmt = new Intl.DateTimeFormat("en-GB", {
     dateStyle: "long",
     timeStyle: "short",
     timeZone: entry.timezone,
