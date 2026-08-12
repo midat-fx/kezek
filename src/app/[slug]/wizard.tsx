@@ -27,8 +27,8 @@ function WaitlistBox({
   if (state === "joined") {
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-        Вы в листе ожидания на {date}. Как только время освободится, мы напишем вам первым — у вас
-        будет 15 минут, чтобы его забрать.
+        You are on the waitlist for {date}. The moment a slot frees up we message you first — you get
+        15 minutes to claim it.
       </div>
     );
   }
@@ -46,12 +46,12 @@ function WaitlistBox({
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4">
       <p className="text-sm text-zinc-700">
-        На этот день всё занято. Встаньте в лист ожидания — если кто-то отменит запись, время
-        предложат вам.
+        This day is fully booked. Join the waitlist — if someone cancels, the slot is offered
+        to you.
       </p>
       <div className="mt-3 space-y-2">
         <input
-          placeholder="Имя"
+          placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full rounded-lg border border-zinc-300 px-3 py-2"
@@ -68,10 +68,10 @@ function WaitlistBox({
           disabled={state === "sending" || !name.trim() || !phone.trim()}
           className="w-full rounded-lg border border-zinc-900 px-4 py-2 text-zinc-900 disabled:opacity-50"
         >
-          {state === "sending" ? "Записываем…" : "Встать в лист ожидания"}
+          {state === "sending" ? "Joining…" : "Join the waitlist"}
         </button>
         {state === "error" && (
-          <p className="text-sm text-red-600">Не получилось — проверьте телефон и попробуйте ещё</p>
+          <p className="text-sm text-red-600">That did not work — check the phone number and try again</p>
         )}
       </div>
     </div>
@@ -102,7 +102,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
     fetch(`/api/public/${slug}/catalog`)
       .then((r) => r.json())
       .then((d) => setServices(d.services ?? []))
-      .catch(() => setError("Не удалось загрузить услуги"));
+      .catch(() => setError("Could not load services"));
   }, [slug]);
 
   // Data lands asynchronously; loading state is `slots === null`,
@@ -112,7 +112,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
     fetch(`/api/public/${slug}/slots?serviceId=${service.id}&staffId=${master.id}&date=${date}`)
       .then((r) => r.json())
       .then((d) => setSlots(d.slots ?? []))
-      .catch(() => setError("Не удалось загрузить время"));
+      .catch(() => setError("Could not load available times"));
   }, [slug, service, master, date]);
 
   useEffect(loadSlots, [loadSlots]);
@@ -135,7 +135,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
     });
     setBusy(false);
     if (!res.ok) {
-      setError("Это время только что заняли — выберите другое");
+      setError("That time was just taken — pick another one");
       loadSlots();
       return;
     }
@@ -166,10 +166,10 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
       const d = await res.json().catch(() => ({}));
       setError(
         d.error === "hold_expired"
-          ? "Бронь истекла — выберите время заново"
+          ? "The hold expired — pick a time again"
           : d.error === "bad_request"
-            ? "Проверьте имя и телефон (формат +7701…)"
-            : "Время уже занято — выберите другое",
+            ? "Check the name and phone (format +7701…)"
+            : "That time is already taken — pick another one",
       );
       if (d.error !== "bad_request") {
         setHold(null);
@@ -184,18 +184,18 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
     return (
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
         <div className="text-4xl">✅</div>
-        <h2 className="mt-2 text-xl font-semibold text-emerald-900">Вы записаны!</h2>
+        <h2 className="mt-2 text-xl font-semibold text-emerald-900">You are booked!</h2>
         <p className="mt-2 text-emerald-800">
           {service.name} · {master.name}
           <br />
           {new Intl.DateTimeFormat("ru-RU", { dateStyle: "long", timeZone: timezone }).format(hold.slot.startMs)}{" "}
-          в {fmtTime.format(hold.slot.startMs)}
+          at {fmtTime.format(hold.slot.startMs)}
         </p>
         <button
           onClick={() => location.reload()}
           className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 text-sm text-white"
         >
-          Записаться ещё
+          Book again
         </button>
       </div>
     );
@@ -205,9 +205,9 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
     <div className="space-y-6">
       {/* Step 1: service */}
       <section>
-        <h2 className="mb-2 font-semibold text-zinc-800">1 · Услуга</h2>
+        <h2 className="mb-2 font-semibold text-zinc-800">1 · Service</h2>
         {!services ? (
-          <p className="text-sm text-zinc-400">Загрузка…</p>
+          <p className="text-sm text-zinc-400">Loading…</p>
         ) : (
           <div className="grid gap-2">
             {services.map((svc) => (
@@ -229,7 +229,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
                   {svc.name}
                   <span className={service?.id === svc.id ? "text-zinc-300" : "text-zinc-400"}>
                     {" "}
-                    · {svc.durationMin} мин
+                    · {svc.durationMin} min
                   </span>
                 </span>
                 <span className="shrink-0 font-medium">{fmtPrice(svc.priceKzt)}</span>
@@ -242,7 +242,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
       {/* Step 2: master */}
       {service && (
         <section>
-          <h2 className="mb-2 font-semibold text-zinc-800">2 · Мастер</h2>
+          <h2 className="mb-2 font-semibold text-zinc-800">2 · Staff member</h2>
           <div className="flex flex-wrap gap-2">
             {service.staff.map((m) => (
               <button
@@ -268,7 +268,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
       {/* Step 3: date + slot */}
       {service && master && !hold && (
         <section>
-          <h2 className="mb-2 font-semibold text-zinc-800">3 · Дата и время</h2>
+          <h2 className="mb-2 font-semibold text-zinc-800">3 · Date and time</h2>
           <input
             type="date"
             value={date}
@@ -280,7 +280,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
             className="mb-3 rounded-lg border border-zinc-300 px-3 py-2"
           />
           {!slots ? (
-            <p className="text-sm text-zinc-400">Загрузка…</p>
+            <p className="text-sm text-zinc-400">Loading…</p>
           ) : slots.length === 0 ? (
             <WaitlistBox
               slug={slug}
@@ -308,16 +308,16 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
       {/* Step 4: contacts */}
       {hold && (
         <section className="rounded-2xl border border-zinc-200 bg-white p-4">
-          <h2 className="font-semibold text-zinc-800">4 · Ваши данные</h2>
+          <h2 className="font-semibold text-zinc-800">4 · Your details</h2>
           <p className="mt-1 text-sm text-zinc-500">
-            Время {fmtTime.format(hold.slot.startMs)} удержано ещё{" "}
+            Slot {fmtTime.format(hold.slot.startMs)} held for another{" "}
             <span className={holdLeft < 60 ? "font-semibold text-red-600" : "font-semibold"}>
               {Math.floor(holdLeft / 60)}:{String(holdLeft % 60).padStart(2, "0")}
             </span>
           </p>
           <div className="mt-3 space-y-3">
             <input
-              placeholder="Имя"
+              placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full rounded-lg border border-zinc-300 px-3 py-2"
@@ -335,7 +335,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
                 disabled={busy || !name.trim() || !phone.trim() || holdLeft === 0}
                 className="flex-1 rounded-lg bg-zinc-900 px-4 py-2 text-white disabled:opacity-50"
               >
-                {busy ? "Подтверждаем…" : "Подтвердить запись"}
+                {busy ? "Confirming…" : "Confirm booking"}
               </button>
               <button
                 onClick={() => {
@@ -344,7 +344,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
                 }}
                 className="rounded-lg border border-zinc-300 px-4 py-2"
               >
-                Назад
+                Back
               </button>
             </div>
           </div>
