@@ -14,7 +14,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-vc() { npx --yes vercel@latest "$@"; }
+# Pin with VERCEL_CLI=vercel@58.9.5 if a freshly published "latest" is broken.
+vc() { npx --yes "${VERCEL_CLI:-vercel@latest}" "$@"; }
 
 echo "==> 1/6  Vercel account"
 vc whoami >/dev/null 2>&1 || vc login
@@ -25,8 +26,10 @@ vc link --yes
 echo "==> 3/6  Provision Postgres (Neon) and Redis (Upstash)"
 # Each `integration add` connects the resource to this project and pulls the
 # connection string into its environment variables automatically.
+# Both are Marketplace products; the first install of each asks you to accept
+# that vendor's terms in the browser (the CLI prints the link).
 vc env ls production 2>/dev/null | grep -q DATABASE_URL || vc integration add neon
-vc env ls production 2>/dev/null | grep -q REDIS_URL   || vc integration add upstash
+vc env ls production 2>/dev/null | grep -q REDIS_URL   || vc integration add upstash/upstash-kv
 
 echo "==> 4/6  Session signing key"
 if vc env ls production 2>/dev/null | grep -q SESSION_SECRET; then
