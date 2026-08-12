@@ -35,15 +35,16 @@ else
   openssl rand -hex 32 | vc env add SESSION_SECRET production
 fi
 
-echo "==> 5/6  Deploy, then migrate and seed the fresh database"
-url=$(vc deploy --prod --yes | tail -1)
-
+echo "==> 5/6  Migrate and seed the new database"
+# Before the first deploy, not after: the production build renders pages that
+# query the database, so the schema has to exist by the time it runs.
 vc env pull .env.production.local --environment=production --yes
 set -a; . ./.env.production.local; set +a   # gitignored by .env*
 pnpm db:migrate
 pnpm db:seed
 
-echo "==> 6/6  Point the repository at the live app"
+echo "==> 6/6  Deploy and point the repository at the live app"
+url=$(vc deploy --prod --yes | tail -1)
 gh repo edit midat-fx/kezek --homepage "$url" || true
 
 echo
