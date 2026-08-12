@@ -6,6 +6,11 @@ Online booking platform for service businesses (salons, barbershops, clinics) �
 
 Clients book a service in a 4-step wizard; the business runs its day from an admin panel with a live calendar, CRM, a waitlist that fills its own cancellations, and analytics. Kazakh «кезек» = "queue".
 
+**Live demo — [kezek-midat-fx.vercel.app/aruzhan](https://kezek-midat-fx.vercel.app/aruzhan)**
+Book a slot as a client, then open the [admin panel](https://kezek-midat-fx.vercel.app/admin) with
+`owner@kezek.dev` / `kezek-demo` and watch it land on the calendar. Deliberately public demo
+credentials; the data is seeded and disposable. Vercel + Neon + Upstash, free tiers.
+
 | Public booking | Slot held while you check out |
 |---|---|
 | ![Booking wizard](docs/screenshots/01-booking-wizard.png) | ![Slot hold countdown](docs/screenshots/02-slot-hold.png) |
