@@ -2,6 +2,19 @@
 
 Free tiers cover this app entirely: Vercel (hosting), Neon (Postgres), Upstash (Redis). Total cost $0/month.
 
+## The short way
+
+```bash
+./scripts/deploy.sh
+```
+
+Logs into Vercel (one browser click — the only interactive step), provisions Neon
+and Upstash through the Vercel Marketplace so their connection strings are injected
+straight into the project, generates the session key, deploys, migrates and seeds the
+new database, and points the repository at the live URL.
+
+Everything below is the same thing done by hand, and is worth reading if a step fails.
+
 ## 1. Database — Neon
 
 1. Create a project at [neon.tech](https://neon.tech) (region: any, e.g. `eu-central-1`).
