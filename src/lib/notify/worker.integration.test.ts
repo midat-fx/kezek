@@ -106,8 +106,8 @@ describe("drainOnce", () => {
     const drained = await drainOnce();
     expect(drained.sent).toBe(1);
     const bodies = (await messages()).map((m) => m.subject);
-    expect(bodies.some((b) => b.includes("отменена"))).toBe(true);
-    expect(bodies.some((b) => b.includes("напоминание"))).toBe(false);
+    expect(bodies.some((b) => b.includes("cancelled"))).toBe(true);
+    expect(bodies.some((b) => b.includes("reminder"))).toBe(false);
   });
 
   it("retries with backoff when a channel fails, then gives up", async () => {

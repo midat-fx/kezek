@@ -13,18 +13,18 @@ export async function login(
 ): Promise<{ error: string } | null> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  if (!email || !password) return { error: "Введите email и пароль" };
+  if (!email || !password) return { error: "Enter an email and a password" };
 
   const ip = (await headers()).get("x-forwarded-for")?.split(",")[0] ?? "local";
   if (!(await rateLimit(`login:${ip}`, 10, 60))) {
-    return { error: "Слишком много попыток, подождите минуту" };
+    return { error: "Too many attempts, wait a minute" };
   }
 
   const user = await db.query.users.findFirst({ where: eq(schema.users.email, email) });
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    return { error: "Неверный email или пароль" };
+    return { error: "Wrong email or password" };
   }
-  if (!user.businessId) return { error: "Пользователь не привязан к бизнесу" };
+  if (!user.businessId) return { error: "This user is not attached to a business" };
 
   await createSession({
     userId: user.id,

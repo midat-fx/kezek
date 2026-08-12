@@ -3,14 +3,14 @@ import { requireSession } from "@/lib/session";
 import { logout } from "@/app/login/actions";
 
 const nav = [
-  ["/admin", "Календарь"],
-  ["/admin/clients", "Клиенты"],
-  ["/admin/services", "Услуги"],
-  ["/admin/staff", "Мастера"],
-  ["/admin/reports", "Отчёты"],
-  ["/admin/analytics", "Аналитика"],
-  ["/admin/notifications", "Уведомления"],
-  ["/admin/audit", "Журнал"],
+  ["/admin", "Calendar"],
+  ["/admin/clients", "Clients"],
+  ["/admin/services", "Services"],
+  ["/admin/staff", "Staff"],
+  ["/admin/reports", "Reports"],
+  ["/admin/analytics", "Analytics"],
+  ["/admin/notifications", "Notifications"],
+  ["/admin/audit", "Audit"],
 ] as const;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -31,7 +31,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
           <form action={logout} className="flex items-center gap-3 text-sm">
             <span className="hidden text-zinc-500 sm:inline">{session.name}</span>
-            <button className="rounded-lg border border-zinc-300 px-3 py-1 hover:bg-zinc-100">Выйти</button>
+            <button className="rounded-lg border border-zinc-300 px-3 py-1 hover:bg-zinc-100">Sign out</button>
           </form>
         </div>
       </header>
