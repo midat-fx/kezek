@@ -19,7 +19,7 @@ export default async function AuditPage() {
     .orderBy(desc(s.auditLog.createdAt))
     .limit(100);
 
-  const fmt = new Intl.DateTimeFormat("ru-RU", { dateStyle: "short", timeStyle: "medium" });
+  const fmt = new Intl.DateTimeFormat("en-GB", { dateStyle: "short", timeStyle: "medium" });
   return (
     <div className="max-w-3xl">
       <h1 className="mb-4 text-xl font-semibold">Audit log</h1>

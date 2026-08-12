@@ -6,7 +6,7 @@ type Service = { id: string; name: string; durationMin: number; priceKzt: number
 type Slot = { startMs: number; endMs: number };
 type Hold = { holdToken: string; expiresInSec: number; slot: Slot };
 
-const fmtPrice = (kzt: number) => `${kzt.toLocaleString("ru-RU")} ₸`;
+const fmtPrice = (kzt: number) => `${kzt.toLocaleString("en-GB")} ₸`;
 
 /** Offered instead of an empty slot grid: a full day is a lead, not a dead end. */
 function WaitlistBox({
@@ -94,7 +94,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
 
   const fmtTime = useMemo(
     () =>
-      new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: timezone }),
+      new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: timezone }),
     [timezone],
   );
 
@@ -188,7 +188,7 @@ export function BookingWizard({ slug, timezone }: { slug: string; timezone: stri
         <p className="mt-2 text-emerald-800">
           {service.name} · {master.name}
           <br />
-          {new Intl.DateTimeFormat("ru-RU", { dateStyle: "long", timeZone: timezone }).format(hold.slot.startMs)}{" "}
+          {new Intl.DateTimeFormat("en-GB", { dateStyle: "long", timeZone: timezone }).format(hold.slot.startMs)}{" "}
           at {fmtTime.format(hold.slot.startMs)}
         </p>
         <button

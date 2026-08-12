@@ -2,7 +2,7 @@ import { cohorts, revenueTrend, topClients, utilization } from "@/lib/analytics"
 import { requireSession } from "@/lib/session";
 import { TrendChart } from "./trend-chart";
 
-const kzt = (n: number) => `${n.toLocaleString("ru-RU")} ₸`;
+const kzt = (n: number) => `${n.toLocaleString("en-GB")} ₸`;
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
 export default async function AnalyticsPage() {
