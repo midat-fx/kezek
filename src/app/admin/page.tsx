@@ -63,7 +63,7 @@ export default async function CalendarPage(ctx: {
     id,
     name,
   }));
-  const fmtTime = new Intl.DateTimeFormat("ru-RU", {
+  const fmtTime = new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: biz.timezone,
@@ -114,7 +114,7 @@ export default async function CalendarPage(ctx: {
                       </div>
                       <div className="mt-1">{r.serviceName}</div>
                       <div className="text-zinc-600">
-                        {r.clientName} · {r.clientPhone} · {r.priceKzt.toLocaleString("ru-RU")} ₸
+                        {r.clientName} · {r.clientPhone} · {r.priceKzt.toLocaleString("en-GB")} ₸
                       </div>
                       {r.status === "confirmed" && (
                         <div className="mt-2 flex gap-1">

@@ -27,7 +27,7 @@ export default async function NotificationsPage() {
     .orderBy(desc(s.messageLog.createdAt))
     .limit(50);
 
-  const fmt = new Intl.DateTimeFormat("ru-RU", { dateStyle: "short", timeStyle: "short" });
+  const fmt = new Intl.DateTimeFormat("en-GB", { dateStyle: "short", timeStyle: "short" });
   const counts = queue.reduce<Record<string, number>>((acc, r) => {
     acc[r.status] = (acc[r.status] ?? 0) + 1;
     return acc;

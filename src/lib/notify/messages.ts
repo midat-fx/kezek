@@ -8,7 +8,7 @@ import type { ClaimedMessage } from "@/lib/outbox";
 type Rendered = Omit<Delivery, "businessId" | "outboxId">;
 
 function fmt(dateMs: number, timeZone: string): string {
-  return new Intl.DateTimeFormat("ru-RU", {
+  return new Intl.DateTimeFormat("en-GB", {
     dateStyle: "long",
     timeStyle: "short",
     timeZone,

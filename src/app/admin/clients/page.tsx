@@ -42,7 +42,7 @@ export default async function ClientsPage() {
                 <td className={`p-3 text-right ${Number(c.noShows) > 0 ? "text-red-600" : ""}`}>
                   {c.noShows}
                 </td>
-                <td className="p-3 text-right">{Number(c.spentKzt).toLocaleString("ru-RU")} ₸</td>
+                <td className="p-3 text-right">{Number(c.spentKzt).toLocaleString("en-GB")} ₸</td>
               </tr>
             ))}
           </tbody>
