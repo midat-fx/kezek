@@ -23,8 +23,11 @@ async function completed(opts: {
   staffId?: string;
   durationMin?: number;
 }) {
-  const day = new Date(Date.now() - opts.daysAgo * 24 * 3600_000);
-  day.setUTCHours(6, 0, 0, 0); // 11:00 Almaty — inside opening hours
+  // Count days on the business calendar (Asia/Almaty), as analytics does —
+  // a UTC-based "yesterday" drifts by a day after 19:00 UTC.
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Almaty" }).format(new Date());
+  const [y, m, d] = today.split("-").map(Number);
+  const day = new Date(Date.UTC(y, m - 1, d - opts.daysAgo, 6)); // 11:00 Almaty — inside opening hours
   const end = new Date(day.getTime() + (opts.durationMin ?? 60) * 60_000);
   await db.insert(s.bookings).values({
     businessId: f.business.id,
